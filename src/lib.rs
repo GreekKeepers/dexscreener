@@ -55,7 +55,7 @@ impl DexScreener {
         pairs: &str,
     ) -> Result<Vec<models::Pair>, errors::Error> {
         let now = Utc::now().timestamp_millis();
-        if now > self.last_refresh {
+        if now > self.last_refresh + 300000 {
             let response = self
                 .client
                 .get(format!(
