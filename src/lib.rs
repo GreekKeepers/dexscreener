@@ -50,6 +50,32 @@ impl DexScreener {
 
         return Ok(self.pairs.pairs.clone());
     }
+    pub async fn fetch_pairs_raw(
+        &mut self,
+        pairs: &str,
+    ) -> Result<Vec<models::Pair>, errors::Error> {
+        let now = Utc::now().timestamp_millis();
+        if now > self.last_refresh {
+            let response = self
+                .client
+                .get(format!(
+                    "https://api.dexscreener.com/latest/dex/tokens/{}",
+                    pairs
+                ))
+                .send()
+                .await
+                .map_err(errors::Error::RequestError)?
+                .text()
+                .await
+                .map_err(errors::Error::RequestError)?;
+
+            let pairs = serde_json::from_str(&response)
+                .map_err(|e| errors::Error::SerdeError(e, response))?;
+            self.pairs = Arc::new(pairs)
+        }
+
+        return Ok(self.pairs.pairs.clone());
+    }
 }
 
 
